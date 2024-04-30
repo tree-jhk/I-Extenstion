@@ -1,0 +1,7 @@
+langchain
+chainlit
+openai==0.27.7
+spacy
+pymupdf
+chromadb
+tiktoken
