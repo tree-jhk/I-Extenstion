@@ -1,3 +1,7 @@
+# Others
+/chainlit/tmp
+chainlit/.chainlit/.langchain.db
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
