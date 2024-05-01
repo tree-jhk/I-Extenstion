@@ -1,0 +1,145 @@
+.chat-interface {
+  display: flex;
+  height: 800px;
+  border: 1px solid #87CEEB;
+  font-family: Arial, sans-serif;
+  background-color: #fff;
+}
+
+.left-panel {
+  width: 250px;
+  padding: 20px;
+  background-color: #f1f1f1;
+  overflow-y: auto;
+}
+
+.left-panel h3 {
+  margin-top: 0;
+}
+
+.option-group {
+  margin-bottom: 20px;
+}
+
+.option-group h4 {
+  margin-bottom: 10px;
+}
+
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 40px;
+  height: 20px;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.toggle-slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: .4s;
+  border-radius: 20px;
+}
+
+.toggle-slider:before {
+  position: absolute;
+  content: "";
+  height: 16px;
+  width: 16px;
+  left: 2px;
+  bottom: 2px;
+  background-color: white;
+  transition: .4s;
+  border-radius: 50%;
+}
+
+input:checked + .toggle-slider {
+  background-color: #87CEEB;
+}
+
+input:checked + .toggle-slider:before {
+  transform: translateX(20px);
+}
+
+.verbal-style-group label {
+  display: block;
+  margin-bottom: 5px;
+}
+
+.right-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+}
+
+#messages {
+  flex: 1;
+  overflow-y: auto;
+  margin-bottom: 20px;
+}
+
+.message {
+  display: flex;
+  margin-bottom: 10px;
+}
+
+.user-icon, .bot-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  margin-right: 10px;
+}
+
+.user-icon {
+  background-color: #87CEEB;
+}
+
+.bot-icon {
+  background-color: #f1f1f1;
+}
+
+.message-content {
+  max-width: 70%;
+  padding: 10px;
+  border-radius: 10px;
+}
+
+.user-message .message-content {
+  background-color: #87CEEB;
+  color: #fff;
+}
+
+.bot-message .message-content {
+  background-color: #f1f1f1;
+}
+
+.input-container {
+  display: flex;
+}
+
+#message-input {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid #87CEEB;
+  border-radius: 4px;
+}
+
+#sendButton {
+  padding: 10px 20px;
+  background-color: #87CEEB;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  margin-left: 10px;
+  cursor: pointer;
+}
