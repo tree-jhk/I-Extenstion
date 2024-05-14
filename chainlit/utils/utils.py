@@ -16,6 +16,7 @@ api_key = os.getenv('OPENAI_API_KEY')  # 환경 변수 읽기
 os.environ["OPENAI_API_KEY"] = api_key
 
 model = 'gpt-3.5-turbo'
+better_model = 'gpt-4-turbo'
 client = AsyncOpenAI(api_key=os.environ.get(api_key))
 
 API_MAX_RETRY = 16
