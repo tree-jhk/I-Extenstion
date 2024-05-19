@@ -176,7 +176,6 @@ def save_qa_to_json(Q_list, A_list, file_path):
 def validate_and_save(client,json_file_path,txt_file_path=False):
     '''
     JSON file -> 질문,답변 가져오기 -> 검증 (-> txt파일에 저장) -> JSON file
-
     '''
     Q_list, A_list = extract_from_json_file(json_file_path)
 
