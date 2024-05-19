@@ -25,7 +25,9 @@ async def on_chat_start():
     if action == 'cancel':
         await cl.Message(content=f"다음에 봐요!").send()
     elif action == 'continue':
-        Q, A = await generate_quiz(document)
+        user_qtype = await get_type()  # 문제유형 설정
+        userdiff = await get_diff()  # 난이도 설정
+        Q, A = await generate_quiz(document, user_qtype, userdiff)  # get_text로 가져온 텍스트로 generate utils.py에 있음
         await cl.Message(content=f"생성된 질문입니다:\n\n{Q}").send()
 
         await cl.AskActionMessage(
@@ -95,6 +97,28 @@ async def get_action():
         actions=[
             cl.Action(name="continue", value="continue", label="💡 퀴즈 만들기"),
             cl.Action(name="cancel", value="cancel", label="❌ 오늘은 그만"),
+        ],
+    ).send()
+    return res['value']
+
+async def get_diff():
+    res = await cl.AskActionMessage(
+        content="Choose the level of difficulty",
+        actions=[
+            cl.Action(name="easy", value="easy", label="💡 쉬움"),
+            cl.Action(name="normal", value="normal", label="💡💡 보통"),
+            cl.Action(name="hard", value="hard", label="💡💡💡💡 어려움"),
+        ],
+    ).send()
+    return res['value']
+
+async def get_type():
+    res = await cl.AskActionMessage(
+        content="Choose the type of question",
+        actions=[
+            cl.Action(name="TF", value="TF", label="✅or❌ 참/거짓"),
+            cl.Action(name="descriptive", value="descriptive", label="📝 서술형"),
+            cl.Action(name="proof", value="proof", label="📝 증명"),
         ],
     ).send()
     return res['value']
