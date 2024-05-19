@@ -12,7 +12,7 @@ from openai import OpenAI
 load_dotenv()
 API_KEY = os.environ['OPENAI_API_KEY']
 
-client = OpenAI(api_key=API_KEY)
+client = OpenAI(api_key=API_KEY) #client는 필요합니다!
 # XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 
 @cl.on_chat_start
@@ -24,6 +24,7 @@ async def on_chat_start():
     action = await get_action()
     if action == 'cancel':
         await cl.Message(content=f"다음에 봐요!").send()
+
     elif action == 'continue':
         user_qtype = await get_type()  # 문제유형 설정
         userdiff = await get_diff()  # 난이도 설정
@@ -38,9 +39,11 @@ async def on_chat_start():
         ).send()
 
         await cl.Message(content=f"생성된 정답입니다:\n\n{A}").send()
+
         '''
         수정된 부분 : 검증
         '''
+
         await cl.AskActionMessage(
             content="Pick an action!",
             actions=[
@@ -53,15 +56,19 @@ async def on_chat_start():
 
         NQ, NA = validate_answer(client, Q_list, A_list)
 
-        # save_qa_to_json(Q_list,A_list,"temp.json") # 질문과 답변을 JSON에 저장.
+        '''
+        JSON FILE처리에 대한 기능은 모두 구현을 해 놨는데(convert.py), QUIZ_CHAT.PY에 추가 하지 않았습니다...
+        '''
+        # save_qa_to_json(Q_list,A_list) # 질문과 답변을 JSON에 저장.
 
         NA_str = "\n\n".join(NA)
 
         await cl.Message(content=f"검증이 완료되었습니다. 모델:GPT-4o:\n\n{NA_str}").send()
 
         '''
-        수정된 부분 : txt로 저장
+        수정된 부분 : txt로 저장하는 부분
         '''
+
         await cl.AskActionMessage(
             content="Pick an action!",
             actions=[
@@ -74,8 +81,9 @@ async def on_chat_start():
 
         save_txt(NQ,NA,file_path)
 
-        #좀 더 알아보고 수정할 예정.
+        #chainlit에서 사용자에게 다운로드할 수 있게 하는 기능이 없어서. 이건 조금 찾아보는 중입니다...
         await cl.Message(content=f"Here is your file: [Download {file_name}](upload/{file_path})").send()
+
 
 
 

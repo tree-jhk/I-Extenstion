@@ -3,6 +3,8 @@ import re
 import pptx
 import json
 
+NAMEOFFILE="qa_file.json"
+
 def extract_text_from_pdf(pdf_file_path):
     text = ""
     with open(pdf_file_path, "rb") as f:
@@ -101,15 +103,7 @@ def content_preprocessing2(client,file,style=None):
 
     return re_str
 
-def extract_from_json_file(file_path):
 
-    with open(file_path, 'r', encoding='utf-8') as file:
-        data = json.load(file)
-
-    questions = data.get('question', [])
-    answers = data.get('answer', [])
-
-    return questions, answers
 
 def validate_answer(client,Q_list,A_list,context=False,upgrade_question=False):
 
@@ -147,6 +141,7 @@ or If it's accurate, just print out the answer as it is.
     return Q_list, A_list
 
 
+#txt file로 변환해주는 기능.
 def save_txt(Q_list, A_list, file_path):
 
     with open(file_path, 'w', encoding='utf-8') as file:
@@ -162,17 +157,33 @@ def save_txt(Q_list, A_list, file_path):
         file.write("Question:"+Q_str+"\n")
         file.write("Answer:"+A_str)
 
-def save_qa_to_json(Q_list, A_list, file_path):
 
-    data = {
-        "questions": Q_list,
-        "answers": A_list
-    }
+'''
+JSON FILE 처리하는 함수가 있는 부분.
+'''
+
+def save_qa_to_json(questions, answers, filename=NAMEOFFILE):
+    if len(questions) != len(answers):
+        raise ValueError("The number of questions and answers must be the same.")
+
+    qa_pairs = [{"question": q, "answer": a} for q, a in zip(questions, answers)]
+
+    with open(filename, 'w', encoding='utf-8') as f:
+        json.dump(qa_pairs, f, ensure_ascii=False, indent=4)
+
+def extract_from_json_file(filename=NAMEOFFILE):
+    with open(filename, 'r', encoding='utf-8') as f:
+        data = json.load(f)
+
+    questions = [item['question'] for item in data]
+    answers = [item['answer'] for item in data]
+
+    return questions, answers
 
 
-    with open(file_path, 'w', encoding='utf-8') as file:
-        json.dump(data, file, indent=4)
-
+'''
+검증하는 함수 통합이기는 하지만 수정 필요할 것으로 예상!
+'''
 def validate_and_save(client,json_file_path,txt_file_path=False):
     '''
     JSON file -> 질문,답변 가져오기 -> 검증 (-> txt파일에 저장) -> JSON file
