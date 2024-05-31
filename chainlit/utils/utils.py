@@ -48,10 +48,8 @@ async def openai_output_async(client, model, query, chat_history=list()):
             )
             output = response.choices[0].message.content
             break
-        except openai.error.InvalidRequestError as e:
+        except:
             print("ERROR DURING OPENAI API")
-            if 'context_length_exceeded' in str(e):
-                raise Exception("Context length exceeded. Please reduce the length of the messages.")
             time.sleep(API_RETRY_SLEEP)
     return output
 
