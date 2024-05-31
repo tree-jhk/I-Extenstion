@@ -1,7 +1,6 @@
 import os
 from utils.convert import *
 
-
 def get_text(file_dir):
     available_extensions = ['ppt', 'txt', 'pdf', 'pptx', 'mp3']
     file_extension = file_dir.split('.')[-1]

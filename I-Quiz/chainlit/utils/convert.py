@@ -1,6 +1,9 @@
 from PyPDF2 import PdfReader
 import re
 import pptx
+import json
+
+NAMEOFFILE="qa_file.json"
 
 def extract_text_from_pdf(pdf_file_path):
     text = ""
@@ -52,28 +55,6 @@ def file2text(file,client=None):
             print("오류 발생:", e)
             return None
 
-def response(client,a_id,t_id,content,command):
-  message = client.beta.threads.messages.create(
-    thread_id=t_id,
-    role="user",
-    content=content
-  )
-
-
-  run = client.beta.threads.runs.create_and_poll(
-    thread_id=t_id,
-    assistant_id=a_id,
-    instructions=command
-  )
-
-  if run.status == 'completed':
-    messages = client.beta.threads.messages.list(
-      thread_id=t_id
-    )
-    return str(messages.data[0].content[0].text.value)
-  else:
-    return None
-
 def respoens2(client,model,data,query,temperature=1,max_tokens=1500):
     response = client.chat.completions.create(
         model=model,
@@ -96,75 +77,122 @@ def respoens2(client,model,data,query,temperature=1,max_tokens=1500):
     )
     return response.choices[0].message.content
 
-
-# def get_style(file):
-#     x = extract_text_from_pdf(file)
-#     return '<<'+"시험문제는 다음과 같이 나온다."+x+"이러한 문제의 유형을 대비해야한다."+'>>'
-
-
-def content_preprocessing(client,as_id,t_id,file,style=None):
-
-    if re.search(r'\.mp3$',file):
-
-        audio_file = open(file, "rb")
-        transcription = client.audio.transcriptions.create(
-            model="whisper-1",
-            file=audio_file
-        )
-        pdf_text = transcription.text
-    else:
-        pdf_text = extract_text_from_pdf(file)
-
-    x = len(pdf_text)
-    num1 = x // 4
-    num2 = x // 2
-    num3 = int(x * (3/4))
-    pdf_1 = '<<'+pdf_text[0:num1]+'>>'
-    pdf_2 = '<<'+pdf_text[num1:num2]+'>>'
-    pdf_3 = '<<'+pdf_text[num2:num3]+'>>'
-    pdf_4 = '<<'+pdf_text[num3:x-1]+'>>'
-
-
-    # if style != None:
-    #     command1 = style+"이를 참고하여 <* *>안에 있는 내용을 바탕으로 워드 한 페이지 분량의 교재를 만들어라. "
-    #
-    # x = response(client,as_id,t_id,pdf_1,st+"이를 참고하여 <* *>안에 있는 내용을 바탕으로 워드 한페이지 분량의 교재를 만들어라.")
-    # print(x)
-
-    command1 = "이를 참고하여 << >>안에 있는 내용을 바탕으로 워드 한페이지 분량의 교재를 만들어라. 내용은 정확하고 자세해야 한다."
-    chunk1 = response(client,as_id,t_id,pdf_1,command1)
-    chunk2 = response(client, as_id, t_id, pdf_2, command1)
-    chunk3 = response(client, as_id, t_id, pdf_3, command1)
-    chunk4 = response(client, as_id, t_id, pdf_4, command1)
-    enter_str = "\n\n"
-
-    re_str = chunk1+enter_str+chunk2+enter_str+chunk3+enter_str+chunk4
-
-    return re_str
-
 def content_preprocessing2(client,file,style=None):
-    model = "gpt-3.5-turbo"
+    model = "gpt-4o"
+    #model = "gpt-4o" #한번에 데이터를 넣을 수 있음.
 
     pdf_text = file2text(file,client) #ppt,mp3,txt,pdf -> string으로 return
 
     x = len(pdf_text)
-    num1 = x // 4
-    num2 = x // 2
-    num3 = int(x * (3/4))
-    pdf_1 = '<<'+pdf_text[0:num1]+'>>'
-    pdf_2 = '<<'+pdf_text[num1:num2]+'>>'
-    pdf_3 = '<<'+pdf_text[num2:num3]+'>>'
-    pdf_4 = '<<'+pdf_text[num3:x-1]+'>>'
+    num = x // 2
+    
+    pdf_1 = '<<'+pdf_text[:num]+'>>'
+    pdf_2 = '<<'+pdf_text[num:]+'>>'
+    full_pdf = '<<'+pdf_text+'>>'
+    
 
     command1 = "이를 참고하여 << >>안에 있는 내용을 바탕으로 워드 한페이지 분량의 교재를 만들어라. 내용은 정확하고 자세해야 한다."
 
     chunk1 = respoens2(client,model,pdf_1,command1)
     chunk2 = respoens2(client,model,pdf_2,command1)
-    chunk3 = respoens2(client,model,pdf_3,command1)
-    chunk4 = respoens2(client,model,pdf_4,command1)
+
     enter_str = "\n\n"
 
-    re_str = chunk1+enter_str+chunk2+enter_str+chunk3+enter_str+chunk4
+    re_str = full_pdf
+
 
     return re_str
 
+
+
+def validate_answer(client,Q_list,A_list,context=False,upgrade_question=False):
+
+    context_str = ''
+    context_str2 = ''
+    if context:
+        context_str += f'''### Context
+{context}
+'''
+        context_str2 += 'Answer using the information in the context as much as possible'
+
+    #context가 있으면 위에 코드도 같이 실행됨.
+
+    len_quiz = len(Q_list)
+    for i in range(len_quiz):
+        command_str = f'''
+### Question:
+{Q_list[i]}
+
+### Answer:
+{A_list[i]}
+'''
+        command_str2 = f'''
+### Instruction:
+Is the answer to the question correct?
+If it is not correct, Give me the correct answer just in a similar format to <{A_list[i]}>
+or If it's accurate, just print out the answer as it is.
+'''
+
+        answer = respoens2(client, 'gpt-4o', command_str+context_str, command_str2+context_str2, 0)
+
+        if answer.lower() != A_list[i].lower():
+            A_list[i] = answer
+
+    return Q_list, A_list
+
+
+#txt file로 변환해주는 기능.
+def save_txt(Q_list, A_list, file_path):
+
+    with open(file_path, 'w', encoding='utf-8') as file:
+
+        Q_str = ''
+        A_str = ''
+        for i in range(len(Q_list)):
+            Q_str += f"{Q_list[i]}"
+
+        for j in range(len(A_list)):
+            A_str += f"{A_list[j]}"
+
+        file.write("Question:"+Q_str+"\n")
+        file.write("Answer:"+A_str)
+
+
+'''
+JSON FILE 처리하는 함수가 있는 부분.
+'''
+
+def save_qa_to_json(questions, answers, filename=NAMEOFFILE):
+    if len(questions) != len(answers):
+        raise ValueError("The number of questions and answers must be the same.")
+
+    qa_pairs = [{"question": q, "answer": a} for q, a in zip(questions, answers)]
+
+    with open(filename, 'w', encoding='utf-8') as f:
+        json.dump(qa_pairs, f, ensure_ascii=False, indent=4)
+
+def extract_from_json_file(filename=NAMEOFFILE):
+    with open(filename, 'r', encoding='utf-8') as f:
+        data = json.load(f)
+
+    questions = [item['question'] for item in data]
+    answers = [item['answer'] for item in data]
+
+    return questions, answers
+
+
+'''
+검증하는 함수 통합이기는 하지만 수정 필요할 것으로 예상!
+'''
+def validate_and_save(client,json_file_path,txt_file_path=False):
+    '''
+    JSON file -> 질문,답변 가져오기 -> 검증 (-> txt파일에 저장) -> JSON file
+    '''
+    Q_list, A_list = extract_from_json_file(json_file_path)
+
+    Q, A = validate_answer(client,Q_list,A_list) #context 필요시 작성.
+
+    if txt_file_path:
+        save_txt(Q,A,txt_file_path)
+
+    save_qa_to_json(Q,A)
