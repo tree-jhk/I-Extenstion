@@ -81,10 +81,20 @@ async def on_chat_start():
 
         save_txt(NQ,NA,file_path)
 
-        #chainlit에서 사용자에게 다운로드할 수 있게 하는 기능이 없어서. 이건 조금 찾아보는 중입니다...
-        await cl.Message(content=f"Here is your file: [Download {file_name}](upload/{file_path})").send()
+        # #chainlit에서 사용자에게 다운로드할 수 있게 하는 기능이 없어서. 이건 조금 찾아보는 중입니다...
+        # await cl.Message(content=f"Here is your file: [Download {file_name}](upload/{file_path})").send()
+        
+        elements = [
+            cl.File(
+                name=file_name,
+                path=f"./{file_path}",
+                display="inline",
+            ),
+        ]
 
-
+        await cl.Message(
+            content="파일을 다운로드 하세요!", elements=elements
+        ).send()
 
 
 async def get_file():

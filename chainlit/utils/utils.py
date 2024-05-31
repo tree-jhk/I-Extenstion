@@ -8,6 +8,7 @@ import warnings
 from dotenv import load_dotenv
 import os
 from openai import AsyncOpenAI
+import openai
 
 warnings.filterwarnings('ignore')
 load_dotenv()  # .env 파일 로드
@@ -47,8 +48,10 @@ async def openai_output_async(client, model, query, chat_history=list()):
             )
             output = response.choices[0].message.content
             break
-        except:
+        except openai.error.InvalidRequestError as e:
             print("ERROR DURING OPENAI API")
+            if 'context_length_exceeded' in str(e):
+                raise Exception("Context length exceeded. Please reduce the length of the messages.")
             time.sleep(API_RETRY_SLEEP)
     return output
 
