@@ -4,6 +4,7 @@ import pptx
 import json
 
 NAMEOFFILE="qa_file.json"
+MAXTOKEN = 4096
 
 def extract_text_from_pdf(pdf_file_path):
     text = ""
@@ -55,7 +56,8 @@ def file2text(file,client=None):
             print("오류 발생:", e)
             return None
 
-def respoens2(client,model,data,query,temperature=1,max_tokens=1500):
+def respoens2(client,model,data,query,temperature=1,max_tokens=MAXTOKEN):
+
     response = client.chat.completions.create(
         model=model,
         messages=[
@@ -75,6 +77,7 @@ def respoens2(client,model,data,query,temperature=1,max_tokens=1500):
         frequency_penalty=0,
         presence_penalty=0
     )
+
     return response.choices[0].message.content
 
 def content_preprocessing2(client,file,style=None):
@@ -196,3 +199,27 @@ def validate_and_save(client,json_file_path,txt_file_path=False):
         save_txt(Q,A,txt_file_path)
 
     save_qa_to_json(Q,A)
+
+
+def check_a(client,q,user_a):
+    model = "gpt-4o"
+    command1 = f"질문:{q}"
+    command2 = f"질문에 대한 답이 {user_a}이 맞는가? 맞는지 틀린지를 먼저 기술하고, 부연설명은 짧게 해라."
+
+    an = respoens2(client, model, command1, command2)
+
+    return str(an)
+
+
+def safe_message(client, m, num):
+    model = "gpt-4o"
+    m = str(m)
+    x = len(m) // num
+    lists = [m[i:i + x] for i in range(0, len(m), x)]
+
+    output = ''
+    for j in range(len(lists)):
+        chunk = respoens2(client,model,' ',lists[j])
+        output += chunk
+
+    return output
