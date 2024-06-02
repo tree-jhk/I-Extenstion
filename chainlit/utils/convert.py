@@ -5,6 +5,10 @@ import json
 
 NAMEOFFILE="qa_file.json"
 MAXTOKEN = 4096
+'''
+MAXTOKEN을 줄이면 해결이 되더라구요;;
+그리고 퀴즈 생성속도를 높이기 위해, 파일의 전처리 과정을 생략함. 
+'''
 
 def extract_text_from_pdf(pdf_file_path):
     text = ""
