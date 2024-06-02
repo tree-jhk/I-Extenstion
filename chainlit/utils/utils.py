@@ -9,11 +9,10 @@ from dotenv import load_dotenv
 import os
 from openai import AsyncOpenAI
 import openai
-<<<<<<< HEAD
+
 #from convert import *
 max_tokens = 4096
-=======
->>>>>>> d334eb7ed11d8ab29e10fcda3050ffd9a279a3d5
+
 
 warnings.filterwarnings('ignore')
 load_dotenv()  # .env 파일 로드

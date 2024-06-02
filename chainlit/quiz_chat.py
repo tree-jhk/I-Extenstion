@@ -31,7 +31,7 @@ async def start_quiz_workflow():
     if action == 'cancel':
         await cl.Message(content=f"다음에 봐요!").send()
     elif action == 'continue':
-<<<<<<< HEAD
+
         await create_quiz(document)
 
 
@@ -110,7 +110,7 @@ async def create_quiz(document):
         await start_quiz_workflow()  # 처음 파일 받는 부분부터 다시 시작
     elif next_action == 'cancel':
         await cl.Message(content=f"다음에 봐요!").send()
-=======
+
         user_qtype = await get_type()  # 문제유형 설정
         userdiff = await get_diff()  # 난이도 설정
         Q, A = await generate_quiz(document, user_qtype, userdiff)  # get_text로 가져온 텍스트로 generate utils.py에 있음
@@ -180,7 +180,7 @@ async def create_quiz(document):
         await cl.Message(
             content="파일을 다운로드 하세요!", elements=elements
         ).send()
->>>>>>> d334eb7ed11d8ab29e10fcda3050ffd9a279a3d5
+
 
 
 async def get_file():
