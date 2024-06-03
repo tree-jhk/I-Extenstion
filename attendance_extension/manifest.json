@@ -1,0 +1,26 @@
+{
+    "manifest_version": 3,
+    "name": "Add Blue Button Extension",
+    "version": "1.0",
+    "description": "Adds a blue button inside the course title.",
+    "permissions": ["activeTab"],
+    "content_scripts": [
+      {
+        "matches": ["https://learn.inha.ac.kr/*"],
+        "js": ["content.js"]
+      }
+    ],
+    "web_accessible_resources": [
+      {
+        "resources": [
+          "images/bluebutton.png",
+          "images/redbutton.png",
+          "images/blackbutton.png"
+        ],
+        "matches": [
+          "<all_urls>"
+        ]
+      }
+    ]
+  }
+  
