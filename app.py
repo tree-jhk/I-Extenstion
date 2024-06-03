@@ -2,7 +2,7 @@
 
 from flask import Flask, jsonify
 from flask_cors import CORS
-from learn_inha import login, get_courses, get_assignments, get_quiz, online_attendance_home, online_attendance_tab, thisweek
+from learn_inha import login, get_courses, get_assignments, get_quiz, online_attendance_home, online_attendance_tab
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 
@@ -11,17 +11,24 @@ CORS(app, resources={r"/*": {"origins": "*"}})
 
 def fetch_assignments():
     driver = None
-    try:
-        chrome_options = Options()
-        chrome_options.add_argument("--headless")
-        chrome_options.add_argument("--no-sandbox")
-        chrome_options.add_argument("--disable-dev-shm-usage")
-        chrome_options.add_argument("--disable-gpu")
-        chrome_options.add_argument("--window-size=1920x1080")
+    chrome_options = Options()
+    '''
+    chrome_options.add_argument("--headless")
+    chrome_options.add_argument("--no-sandbox")
+    chrome_options.add_argument("--disable-dev-shm-usage")
+    chrome_options.add_argument("--disable-gpu")
+    chrome_options.add_argument("--window-size=1920x1080")
+    '''
 
+    try:
         driver = webdriver.Chrome(options=chrome_options)
         link = 'https://learn.inha.ac.kr/'
-        login(driver, link)
+        try:
+            login(driver, link)
+            print("logged in")
+
+        except Exception as e:
+            print("while logging in:", e)
 
     except Exception as e:
         print(f"An error occurred while opening driver: {e}")
@@ -32,15 +39,23 @@ def fetch_assignments():
         assignments = {}
         quizzes = {}
         lectures = {}
-        thisweek()
     except Exception as e:
         print(f"An error occurred while fetching assignments: {e}")
         return {}, {}, {}
     for course_name, course_link in courses.items():
             print(course_name)
+            try:
+                lectures_this_week = online_attendance_home(driver, course_link)
+                if lectures_this_week:
+                    lecture_link = online_attendance_tab(driver, lectures_this_week)
+                    if lecture_link:
+                        lectures[course_name] = lecture_link
+            except Exception as e:
+                print(f"An error occurred while getting lectures: {e}")
+                return {}, {}, {}
 
             try:
-                assignment_link = get_assignments(driver, course_link)
+                assignment_link = get_assignments(driver)
                 if assignment_link:
                     assignments[course_name] = assignment_link
             
@@ -49,22 +64,13 @@ def fetch_assignments():
                 return {}, {}, {}
             
             try:
-                quiz_link = get_quiz(driver, course_link)
+                quiz_link = get_quiz(driver)
                 if quiz_link:
                     quizzes[course_name] = quiz_link
             except Exception as e:
                 print(f"An error occurred while getting quizzes: {e}")
                 return {}, {}, {}
-            
-            try:
-                lectures_this_week = online_attendance_home(driver, course_link)
-                if lectures_this_week:
-                    lecture_link = online_attendance_tab(driver, course_link, lectures_this_week)
-                    if lecture_link:
-                        lectures[course_name] = lecture_link
-            except Exception as e:
-                print(f"An error occurred while getting quizzes: {e}")
-                return {}, {}, {}
+        
     return assignments, quizzes, lectures    
     
 
