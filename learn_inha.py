@@ -6,7 +6,20 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import NoSuchElementException, TimeoutException, WebDriverException
 from datetime import datetime, timedelta
 from dateutil.parser import parse, ParserError
+
+
+def due_thisweek(duedate):
+    today = datetime.now() + timedelta(days=0)
+    week_start = today - timedelta(days=today.weekday())
+    week_start = week_start.replace(hour=0, minute=0, second=1, microsecond=0)
+    week_end = week_start + timedelta(days=7)
+
+    if week_start <= duedate <= week_end and today <= duedate:
+        return True
+    else:
+        return False
  
+
 def login(driver, link):
     print("Navigating to login page")
     try:
@@ -14,11 +27,11 @@ def login(driver, link):
     except WebDriverException:
         print("can't navigate to link")
     try:
-        username_input = WebDriverWait(driver, 10).until(
+        username_input = WebDriverWait(driver, 3).until(
             EC.visibility_of_element_located((By.NAME, 'username'))
         )
-        id = '12224383'
-        pw = 'Vechbt0320!!'
+        id = ''  # id 입력
+        pw = ''  # 비밀번호 입력
 
         username_input.send_keys(id)
         driver.find_element(By.NAME, 'password').send_keys(pw)
@@ -28,6 +41,7 @@ def login(driver, link):
         print("Login elements not found")
     except Exception as e:
         print(f"An error occurred during login: {e}")
+
 
 def get_courses(driver):
     try:
@@ -48,18 +62,19 @@ def get_courses(driver):
     except Exception as e:
         print(f"An error occurred while fetching courses: {e}")
 
-def get_assignments(driver, link):
+
+def get_assignments(driver):
     assignments_left = []
-    driver.get(link)
 
     try:
         # Check if the '과제' link exists
-        assignment_exist = WebDriverWait(driver, 5).until(EC.element_to_be_clickable((By.LINK_TEXT, '과제')))
+        #  assignment_exist = WebDriverWait(driver, 1).until(EC.element_to_be_clickable((By.LINK_TEXT, '과제')))
+        assignment_exist = driver.find_element(By.LINK_TEXT, '과제')
         driver.execute_script('arguments[0].click();', assignment_exist)
 
         try:
             # Wait for the table to be present
-            table = WebDriverWait(driver, 5).until(EC.presence_of_element_located((By.CSS_SELECTOR,
+            table = WebDriverWait(driver, 3).until(EC.presence_of_element_located((By.CSS_SELECTOR,
                                                                                     ".table.table-bordered.generaltable")))
 
             rows = table.find_elements(By.TAG_NAME, "tr")[1:]
@@ -81,24 +96,21 @@ def get_assignments(driver, link):
         except TimeoutException:
             print("Assignments table not found")
             return []
-
-    except TimeoutException:
-        print("과제 link not found")
-        return []
     except NoSuchElementException:
-        print("No such element found")
+        print("No such element found 과제")
         return []
     
 
-def get_quiz(driver, link):
+def get_quiz(driver):
     quizzes_left = []
-    driver.get(link)
 
     try:
         # Check if the '퀴즈' link exists
-        quiz_exist = WebDriverWait(driver, 1).until(EC.presence_of_element_located((By.LINK_TEXT, '퀴즈')))
+        # quiz_exist = WebDriverWait(driver, 1).until(EC.presence_of_element_located((By.LINK_TEXT, '퀴즈')))
+        quiz_exist = driver.find_element(By.LINK_TEXT, '퀴즈')
         driver.execute_script('arguments[0].click();', quiz_exist)
-    except TimeoutException:
+        print("quiz exists")
+    except NoSuchElementException:
         # If the link doesn't exist, return an empty list
         print("퀴즈 link not found")
         return []
@@ -151,35 +163,13 @@ def get_quiz(driver, link):
             continue
 
     return quizzes_left
-
-
-def due_thisweek(duedate):
-    today = datetime.now() + timedelta(days=0)
-    week_start = today - timedelta(days=today.weekday())
-    week_start = week_start.replace(hour=0, minute=0, second=1, microsecond=0)
-    week_end = week_start + timedelta(days=7)
-
-    if week_start <= duedate <= week_end and today <= duedate:
-        return True
-    else:
-        return False
     
-def thisweek():
-    today = datetime.now() + timedelta(days=0)
-    week_start = today - timedelta(days=today.weekday())
-    week_start = week_start.replace(hour=0, minute=0, second=1, microsecond=0)
-    week_end = week_start + timedelta(days=7)
-
-    print("today:", today)
-    print("start:", week_start)
-    print("end:", week_end)
-    return 0
 
 def online_attendance_home(driver, link):
     try:
         driver.get(link)
     except WebDriverException:
-        return "can't navigate to link"
+        return "Can't navigate to link"
 
     exclude_current = driver.find_element(By.CLASS_NAME, "total_sections")
     rows = exclude_current.find_elements(By.CLASS_NAME, "text-ubstrap")
@@ -205,44 +195,33 @@ def online_attendance_home(driver, link):
         try:
             due_date = parse(due_date_str)
         except ParserError:
-            print("this element is not a date")
-        
+            print("This element is not a date")
+            continue
+
         if due_thisweek(due_date):
             ancestor_class = row.find_element(By.XPATH, "./ancestor::div[contains(@class, 'activityinstance')]")
-
-            lecture_title = ancestor_class.find_element(By.CLASS_NAME, "instancename").text
-            lecture_title = lecture_title.split('\n')[0]
-            print(lecture_title)
-
-            a_element = ancestor_class.find_element(By.TAG_NAME, "a")
-            lecture_link = a_element.get_attribute("href")
+            lecture_title = ancestor_class.find_element(By.CLASS_NAME, "instancename").text.split('\n')[0]
+            lecture_link = ancestor_class.find_element(By.TAG_NAME, "a").get_attribute("href")
             lectures_this_week[lecture_title] = lecture_link
 
-    if not lectures_this_week:
-        return
-    else:
-        return lectures_this_week
+    return lectures_this_week if lectures_this_week else None
 
-def online_attendance_tab(driver, link, lectures_this_week):
+
+def online_attendance_tab(driver, lectures_this_week):
+    if not lectures_this_week:
+        return None
+
     lecture_links = []
-
-    if not lectures_this_week:
-            return None
-    
-    try:
-        driver.get(link)
-    except WebDriverException:
-        return "can't navigate to link"
-
     if isinstance(lectures_this_week, dict):
         progress = driver.find_element(By.LINK_TEXT, '온라인출석부')
         driver.execute_script('arguments[0].click();', progress)
 
-        table = driver.find_element(By.CLASS_NAME, "table-bordered.user_progress_table")
         try:
-            rows = table.find_elements(By.TAG_NAME, "tr")[1:]  # table 안에 있는 모든 행
+            table = driver.find_element(By.CLASS_NAME, "table-bordered.user_progress_table")
+            rows = table.find_elements(By.TAG_NAME, "tr")[1:]  # Skip table header row
         except NoSuchElementException:
-            print("no rows in table")
+            print("No rows in attendance table")
+            return None
 
         attended = []
 
@@ -251,20 +230,23 @@ def online_attendance_tab(driver, link, lectures_this_week):
             for row in rows:
                 try:
                     cells = row.find_elements(By.TAG_NAME, "td")
-                    if len(cells) >= 4 and title in cells[1].text.strip() or title in cells[0].text.strip():
+                    if len(cells) >= 4 and (title in cells[1].text.strip() or title in cells[0].text.strip()):
                         if "text-center" in cells[0].get_attribute("class"):
                             attendance_status = cells[4].text.strip()
                         elif "text-left" in cells[0].get_attribute("class"):
                             attendance_status = cells[3].text.strip()
+
                         if attendance_status == 'O':
-                            print("attended:", title)
+                            print("Attended:", title)
                             attended.append(title)
-                            continue
+                            break
                 except NoSuchElementException:
-                    print("no cells in row")
+                    print("No cells in row")
+                    continue
+
         for title in attended:
             del lectures_this_week[title]
 
         lecture_links = list(lectures_this_week.values())
 
-        return lecture_links
+    return lecture_links if lecture_links else None
