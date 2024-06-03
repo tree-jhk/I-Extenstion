@@ -3,6 +3,8 @@
 chainlit/.chainlit/.langchain.db
 */.files
 */qa_temp.txt
+./files
+*.txt
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
