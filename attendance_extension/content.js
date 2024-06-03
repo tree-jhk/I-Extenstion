@@ -8,15 +8,15 @@ function appendButtonsAfterCourseTitle(titleElement, link, buttonType) {
     let imgSrc, altText;
     switch (buttonType) {
         case 'blue':
-            imgSrc = 'chrome-extension://edgoeffoiaakainpiiecgpphgnjbhbff/images/redbutton.png';
+            imgSrc = 'chrome-extension://lcehaibjfdahdhlcgijddcpdenaoboco/images/redbutton.png';
             altText = '과제';
             break;
         case 'red':
-            imgSrc = 'chrome-extension://edgoeffoiaakainpiiecgpphgnjbhbff/images/redbutton.png';
+            imgSrc = 'chrome-extension://lcehaibjfdahdhlcgijddcpdenaoboco/images/redbutton.png';
             altText = '퀴즈';
             break;
         case 'black':
-            imgSrc = 'chrome-extension://edgoeffoiaakainpiiecgpphgnjbhbff/images/blackbutton.png';
+            imgSrc = 'chrome-extension://lcehaibjfdahdhlcgijddcpdenaoboco/images/blackbutton.png';
             altText = '강의';
             break;
         default:
