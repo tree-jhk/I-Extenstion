@@ -2,7 +2,7 @@ import os
 from utils.convert import *
 
 def get_text(file_dir):
-    available_extensions = ['ppt', 'txt', 'pdf', 'pptx', 'mp3']
+    available_extensions = ['ppt', 'txt', 'pdf', 'pptx', 'mp3','png','jpg']
     file_extension = file_dir.split('.')[-1]
     if file_extension in available_extensions:
         document = file2text(file_dir)

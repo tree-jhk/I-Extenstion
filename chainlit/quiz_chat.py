@@ -181,6 +181,8 @@ async def create_quiz(document):
             content="파일을 다운로드 하세요!", elements=elements
         ).send()
 
+        
+
 
 
 async def get_file():
@@ -189,7 +191,7 @@ async def get_file():
         files = await cl.AskFileMessage(
             max_size_mb=100,
             content=".mp3, .pptx, .pdf, .txt 파일을 올려주세요.",
-            accept={"text/plain": [".txt", ".py"], "application": [".ppt", ".pptx", ".pdf", ".mp3"]},
+            accept={"text/plain": [".txt", ".py"], "application": [".ppt", ".pptx", ".pdf", ".mp3",".png",".jpg"]},
             raise_on_timeout=False,
         ).send()
     return files[0]
@@ -241,3 +243,19 @@ async def get_next_action():
         ],
     ).send()
     return res['value']
+
+import chainlit as cl
+
+
+@cl.on_message
+async def on_message(message: cl.Message):
+    msg = cl.Message(content="")
+    await msg.send()
+
+    # do some work
+    await cl.sleep(2)
+
+    msg.content = f"Processed message {message.content}"
+
+    await msg.update()
+
