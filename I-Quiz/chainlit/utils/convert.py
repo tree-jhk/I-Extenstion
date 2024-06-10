@@ -2,24 +2,66 @@ from PyPDF2 import PdfReader
 import re
 import pptx
 import json
+from PIL import Image
+import pytesseract
+from pdf2image import convert_from_path
+import os
+OUTPUT_PATH = r'chainlit/utils/tempImage'
+
+'''
+POPPLER_PATH와 pytesseract.pytesseract.tesseract_cmd는 bin의 절대경로, tesseract.exe의 절대경로를 가져와야합니다.
+ctrl+shift+c를 통해서 그 파일들의 절대경로를 가져와야함;;;
+'''
+
+POPPLER_PATH = r'C:\Users\qkrck\PycharmProjects\PBPProject\I-Quiz\chainlit\utils\poppler-24.02.0\Library\bin'
+pytesseract.pytesseract.tesseract_cmd = r'C:\Users\qkrck\PycharmProjects\PBPProject\I-Quiz\chainlit\utils\새 폴더\tesseract.exe'
 
 NAMEOFFILE="qa_file.json"
 MAXTOKEN = 4096
-'''
-MAXTOKEN을 줄이면 해결이 되더라구요;;
-그리고 퀴즈 생성속도를 높이기 위해, 파일의 전처리 과정을 생략함. 
-'''
 
-def extract_text_from_pdf(pdf_file_path):
-    text = ""
+
+def pdf_to_images(pdf_path, output_folder):
+    pages = convert_from_path(pdf_path, poppler_path=POPPLER_PATH)
+
+    if not os.path.exists(output_folder):
+        os.makedirs(output_folder)
+
+    image_paths = []
+    for i, page in enumerate(pages):
+        image_path = os.path.join(output_folder, f'page_{i + 1}.jpg')
+        page.save(image_path, 'JPEG')
+        image_paths.append(image_path)
+
+
+    return image_paths
+def extract_text_from_image(image_path):
+    image = Image.open(image_path)
+
+    text = pytesseract.image_to_string(image, lang='eng+kor')
+
+    return text
+
+def extract_text_from_pdf(c,pdf_file_path):
+    text1 = ""
     with open(pdf_file_path, "rb") as f:
         reader = PdfReader(f)
         for page in reader.pages:
-            text += page.extract_text()
-    return text
+            text1 += page.extract_text()
+
+
+    x = pdf_to_images(pdf_file_path,OUTPUT_PATH)
+
+    if len(text1) < 2000:
+        text2 = ""
+        for pt in x:
+            text2 += extract_text_from_image(pt)
+
+        return text2
+
+    return text1
 
 def file2text(file,client=None):
-    print(file)
+
     if re.search(r'\.mp3$',file): #mp3 -> string
         audio_file = open(file, "rb")
         transcription = client.audio.transcriptions.create(
@@ -28,12 +70,12 @@ def file2text(file,client=None):
         )
         return transcription.text
 
-    elif re.search(r'\.pdf$',file): #pdf -> string
-        text = ""
-        with open(file, "rb") as f:
-            reader = PdfReader(f)
-            for page in reader.pages:
-                text += page.extract_text()
+    elif re.search(r'\.pdf$',file): #pdf -> string 2222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222
+        text = extract_text_from_pdf(client,file)
+        return text
+
+    elif re.search(r'\.png$',file) or re.search(r'\.jpg$',file) :
+        text = extract_text_from_image(file)
         return text
 
     elif re.search(r'\.ppt$',file) or re.search(r'\.pptx$',file): #ppt -> string

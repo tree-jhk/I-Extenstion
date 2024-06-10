@@ -5,6 +5,11 @@ chainlit/.chainlit/.langchain.db
 */qa_temp.txt
 ./files
 *.txt
+*.jpg
+*.png
+*.jpeg
+*.gif
+*.pdf
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
