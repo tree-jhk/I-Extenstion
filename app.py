@@ -12,13 +12,12 @@ CORS(app, resources={r"/*": {"origins": "*"}})
 def fetch_assignments():
     driver = None
     chrome_options = Options()
-    '''
     chrome_options.add_argument("--headless")
     chrome_options.add_argument("--no-sandbox")
     chrome_options.add_argument("--disable-dev-shm-usage")
     chrome_options.add_argument("--disable-gpu")
     chrome_options.add_argument("--window-size=1920x1080")
-    '''
+
 
     try:
         driver = webdriver.Chrome(options=chrome_options)
@@ -82,5 +81,5 @@ def handle_ajax_request():
 
 if __name__ == '__main__':
     print("Starting Flask app")
-    app.run(host="0.0.0.0", port=5001, use_reloader=False)  # Development server, not suitable for production
+    app.run(host="0.0.0.0", port=5000, use_reloader=False)  # Development server, not suitable for production
     print("ended")

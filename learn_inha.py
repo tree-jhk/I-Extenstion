@@ -21,7 +21,6 @@ def due_thisweek(duedate):
  
 
 def login(driver, link):
-    print("Navigating to login page")
     try:
         driver.get(link)
     except WebDriverException:
@@ -30,13 +29,12 @@ def login(driver, link):
         username_input = WebDriverWait(driver, 3).until(
             EC.visibility_of_element_located((By.NAME, 'username'))
         )
-        id = ''  # id 입력
-        pw = ''  # 비밀번호 입력
+        id = '12224383'  # id 입력
+        pw = 'Jrho2767!!'  # 비밀번호 입력
 
         username_input.send_keys(id)
         driver.find_element(By.NAME, 'password').send_keys(pw)
         driver.find_element(By.NAME, 'loginbutton').click()
-        print("Login submitted")
     except TimeoutException:
         print("Login elements not found")
     except Exception as e:
@@ -109,10 +107,8 @@ def get_quiz(driver):
         # quiz_exist = WebDriverWait(driver, 1).until(EC.presence_of_element_located((By.LINK_TEXT, '퀴즈')))
         quiz_exist = driver.find_element(By.LINK_TEXT, '퀴즈')
         driver.execute_script('arguments[0].click();', quiz_exist)
-        print("quiz exists")
     except NoSuchElementException:
         # If the link doesn't exist, return an empty list
-        print("퀴즈 link not found")
         return []
 
     try:
@@ -147,7 +143,6 @@ def get_quiz(driver):
     for quiz in quizzes_thisweek:
         try:
             driver.get(quiz)
-            print("got in quiz")
             # search the whole page for the word "제출됨"
             page_source = driver.page_source
             if "제출됨" not in page_source:
