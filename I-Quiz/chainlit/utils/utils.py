@@ -39,7 +39,7 @@ def openai_api_messages(prompt, status='user', chat_history=list()):
 
 async def openai_output_async(client, model, query, chat_history=list()):
     global max_tokens
-    openai_input = openai_api_messages(query, chat_history=chat_history)
+    openai_input = openai_api_messages(query, chat_history=list())
     model = model
     output = API_ERROR_OUTPUT
     for _ in range(API_MAX_RETRY):
@@ -164,10 +164,3 @@ async def generate_quiz(document, user_qtype, userdiff):
     Q, A = '\n\n'.join(question), '\n\n'.join(answer)
 
     return Q, A
-
-
-
-
-
-
-

@@ -152,17 +152,11 @@ or If it's accurate, just print out the answer as it is.
 def save_txt(Q_list, A_list, file_path):
 
     with open(file_path, 'w', encoding='utf-8') as file:
+        Q_str = '\n'.join(Q_list)
+        A_str = '\n'.join(A_list)
 
-        Q_str = ''
-        A_str = ''
-        for i in range(len(Q_list)):
-            Q_str += f"{Q_list[i]}"
-
-        for j in range(len(A_list)):
-            A_str += f"{A_list[j]}"
-
-        file.write("Question:"+Q_str+"\n")
-        file.write("Answer:"+A_str)
+        file.write("Question:\n"+Q_str+"\n\n")
+        file.write("Answer:\n"+A_str)
 
 
 '''
